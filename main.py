@@ -479,7 +479,7 @@ def edit_name2(bot, update, STATE_EDIT_NAME1=106):
                 pass
 
     new_name = spreadsheet.edit_menu_item(store, item_id, food_name, update.message.chat_id)
-    update.message.reply_text("Done! Name changed to {}. Returning to previous page.".format(new_name))
+    update.message.reply_text("Done! Name changed to {}. Conversation will now end.".format(new_name))
 
     return ConversationHandler.END
 
@@ -529,7 +529,7 @@ def edit_price2(bot, update, STATE_EDIT_PRICE1=108):
                 pass
 
     new_price = spreadsheet.edit_price(store, item_id, food_price)
-    update.message.reply_text("Done! New price changed to ${}. Returning to previous page.".format(new_price))
+    update.message.reply_text("Done! New price changed to ${}. Conversation will now end.".format(new_price))
 
     return ConversationHandler.END
 
@@ -549,7 +549,7 @@ def delete_item1(bot, update, STATE_DELETE_ITEM1=110):
                               "Send me the item_id of the food that you wish to delete! \n"
                               "E.g. 2")
 
-    update.message.reply_text(chat_id, "Format: (item_id, item_name, item_price){}"
+    update.message.reply_text("Format: (item_id, item_name, item_price){}"
                               .format(pprint.pformat(menu)))
 
     return STATE_DELETE_ITEM1
@@ -567,7 +567,7 @@ def delete_item2(bot, update, STATE_DELETE_ITEM2=111):
                 pass
 
     outcome = spreadsheet.delete_row_menu(store, order_ID)
-    update.message.reply_text("Done! Returning to previous page.")
+    update.message.reply_text("Done! Conversation will now end.")
     return ConversationHandler.END
 
 
@@ -702,14 +702,14 @@ def cancel(bot, update):
     """allows the user to cancel their current operation"""
 
     user = update.message.from_user
-    logger.info("User %s canceled the conversation." % user.first_name)
+    LOGGER.info("User %s canceled the conversation." % user.first_name)
     update.message.reply_text('Thank you Sir/Madam! Please come again. -Apu',
                               reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
 
 def error(bot, update, error):
-    logging.warning('Update "%s" caused error "%s"' % (update, error))
+    LOGGER.warning('Update "%s" caused error "%s"' % (update, error))
 
 
 def main():
