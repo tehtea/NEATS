@@ -309,7 +309,7 @@ def main_console(bot, update, STATE_VERIFY=100):
         with shelve.open('userdata') as db:
             for key, chat_id in db.items():
                 if str(chat_id) == str(update.message.chat_id):
-                    if key in stores:
+                    if key in db['stores']:
                         store = key
 
     if store in stores:
