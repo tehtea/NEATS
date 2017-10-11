@@ -26,7 +26,7 @@ def access_vendor_spreadsheet(vendor):
         #open a certain spreadsheet
         return gc.open("{}".format(vendor))
     except gspread.exceptions.SpreadsheetNotFound:
-        return "Error"
+        return "Error: Speadsheet not Found"
     except gspread.exceptions.RequestError:
         refresh(credentials)
         access_vendor_spreadsheet(vendor)
@@ -58,9 +58,6 @@ def create_vendor_spreadsheet(vendor, chat_id):
     except gspread.exceptions.RequestError:
         refresh(credentials)
         create_vendor_spreadsheet(vendor, chat_id)
-    except Exception as e:
-        print(e)
-        return "An unknown error has occured"
 
 
 def vendor_check_queue(vendor):
@@ -405,6 +402,3 @@ def del_spreadsheets():
     return None
 
 gc = refresh(credentials)
-
-if __name__ == "__main__":
-    del_spreadsheets()
