@@ -10,21 +10,26 @@ scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
 
 #oauth2 credentials
-credentials = ServiceAccountCredentials.from_json_keyfile_name('config/MakanBot-bfb4ea16e630.json', scope)
+credentials = ServiceAccountCredentials.\
+              from_json_keyfile_name\
+              ('NEATS-master/config/MakanBot-8540c9dc68ec.json', scope)
 
-#authorisation of gspread
-gc = gspread.authorize(credentials)
-
+def refresh(credentials):
+    '''refreshes the client in case the token expires.'''
+    global gc
+    gc = gspread.authorize(credentials)
+    return gc
 
 def access_vendor_spreadsheet(vendor):
     """tries to open a vendor's spreadsheet. Returns error if not found"""
-
     try:
         #open a certain spreadsheet
         return gc.open("{}".format(vendor))
     except gspread.exceptions.SpreadsheetNotFound:
         return "Error"
-
+    except gspread.exceptions.RequestError:
+        refresh(credentials)
+        access_vendor_spreadsheet(vendor)
 
 def create_vendor_spreadsheet(vendor, chat_id):
     """tries to create a vendor's spreadsheet. Spreadsheet will remain private to bot account until shared."""
@@ -50,6 +55,9 @@ def create_vendor_spreadsheet(vendor, chat_id):
         ws.update_acell('E151', 'Quantity')
         ws.update_acell('F151', 'Dabao?')
         return wb
+    except gspread.exceptions.RequestError:
+        refresh(credentials)
+        create_vendor_spreadsheet(vendor, chat_id)
     except Exception as e:
         print(e)
         return "An unknown error has occured"
@@ -346,16 +354,6 @@ def share_spreadsheet(vendor, email):
     return None
 
 
-def del_spreadsheets():
-    '''Deletes all spreadsheets associated with the account.'''
-
-    allfiles = show_all_spreadsheets()
-    for i in allfiles:
-        _id = i.id
-        gc.del_spreadsheet(_id)
-    return None
-
-
 def show_menu(vendor):
     """Function to show the menu associated with a vendor
 Returns the entire menu in a list, with each item in a tuple. The tuple
@@ -393,9 +391,20 @@ contains the item number, the item name and pricing in that particular order."""
 
 def show_all_spreadsheets():
     """shows all the spreadsheets currently registered with this account"""
-
     allfiles = gc.openall()
     return allfiles
 
+
+def del_spreadsheets():
+    '''Deletes all spreadsheets associated with the account.'''
+
+    allfiles = show_all_spreadsheets()
+    for i in allfiles:
+        _id = i.id
+        gc.del_spreadsheet(_id)
+    return None
+
+gc = refresh(credentials)
+
 if __name__ == "__main__":
-    pass
+    del_spreadsheets()

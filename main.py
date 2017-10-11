@@ -1,6 +1,7 @@
-"""!/usr/bin/env python
--*- coding: utf-8 -*-
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
 
+"""
 Makan Bot that allows you to preorder your food before arriving at the eating place.
 Built by NTU students, designed for NTU students (but possibly beyond!)
 Authors: Chew Jing Wei, Ang Jun Liang, Kok Zi Ming, Nigel Ang Wei Jun, Ryan Lau Jit Yang (Team DLLM)
@@ -15,14 +16,9 @@ import sys
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler,\
-     ConversationHandler, MessageHandler, RegexHandler, Filters, run_async
+     ConversationHandler, MessageHandler, RegexHandler, Filters
 
 import spreadsheet
-
-
-
-
-
 
 
 if sys.version_info[0] < 3:
@@ -176,7 +172,6 @@ to ask the customer whether they want to confirm their order."""
     return STATE_SEND_ORDER
 
 
-@run_async
 def send_order(bot, update):
     """Fifth callback which runs when /order is passed to the bot. Sends the order
 notification to the vendor and updates their spreadsheet."""
@@ -215,7 +210,6 @@ def new_vendor(bot, update, STATE_CREATE_NEW_STORE=30):
     return STATE_CREATE_NEW_STORE
 
 
-@run_async
 def create_new_store(bot, update, STATE_CREATE_NEW_STORE=30):
     """Callback for registering a new store with the bot"""
 
@@ -298,19 +292,18 @@ def customer_queue2(bot, update):
     return ConversationHandler.END
 
 #'/console' callbacks
-@run_async
 def main_console(bot, update, STATE_VERIFY=100):
     """Verify vendor to enable access to console commands"""
 
     #Check stores registered > 0 & checks user chat_id matches any of the registered vendors' chat_ids
     store = ''
 
-    if len(stores) > 0:
-        with shelve.open('userdata') as db:
-            for key, chat_id in db.items():
-                if str(chat_id) == str(update.message.chat_id):
-                    if key in db['stores']:
-                        store = key
+    with shelve.open('userdata') as db:
+        stores = db['stores']
+        if len(stores) > 0:
+            for key, item in db.items():
+                if key in stores and str(item) == str(update.message.chat_id):
+                    store = key
 
     if store in stores:
         update.message.reply_text("Hello {} vendor!".format(store))
@@ -325,7 +318,6 @@ def main_console(bot, update, STATE_VERIFY=100):
         return ConversationHandler.END
 
 
-@run_async
 def vendor_queue(bot, update):
     """Command for vendor to check unprepared orders on queue."""
 
@@ -373,7 +365,6 @@ def order_prepared1(bot, update, STATE_ORDER_READY=103):
     return STATE_ORDER_READY
 
 
-@run_async
 def order_prepared2(bot, update, STATE_ORDER_READY=103):
     """To signify order is ready for collection"""
 
@@ -571,7 +562,6 @@ def delete_item2(bot, update, STATE_DELETE_ITEM2=111):
     return ConversationHandler.END
 
 
-@run_async
 def cancel_last_mike(bot, update):
     """A restricted command to undo the vendor's previous 'order ready' signal."""
     chat_id = update.message.chat_id
@@ -691,7 +681,7 @@ def terms(bot, update):
     chat_id = update.message.chat_id
 
     #send the terms and conditions to the user
-    with open("termncondition.txt", "rb") as d:
+    with open("NEATS-master/termncondition.txt", "rb") as d:
         bot.send_document(chat_id=chat_id, document=d)
 
     update.message.reply_text("Here are the terms and conditions! By using this bot, you hereby agree to "
@@ -714,6 +704,7 @@ def error(bot, update, error):
 
 def main():
     # Create the EventHandler and pass it your bot's token.
+    #CHANGE TOKEN HERE
     updater = Updater("462090913:AAG6WxcdYGxm7gfyGtT6pYMn8IUCxL-iv0o")
 
     # Get the dispatcher to register handlers
