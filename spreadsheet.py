@@ -257,7 +257,6 @@ def update_menu_item(vendor, item, chat_id):
 
 def delete_row_menu(vendor, order_ID):
     """deletes row of menu"""
-
     wb = access_vendor_spreadsheet(vendor)
     ws = wb.sheet1
     i = order_ID + 1
@@ -300,8 +299,6 @@ def order_completed(vendor, chat_id, order_ID):
         else:
             print("unexpected error")
             break
-
-
     return None
 
 
@@ -347,7 +344,11 @@ def share_spreadsheet(vendor, email):
     """Shares a spreadsheet titled with the vendor's store name to the email specified"""
 
     _id = access_vendor_spreadsheet(vendor).id
-    gc.insert_permission(_id, email, 'user', 'writer', email_message="Lai ah lai")
+    try:
+        gc.insert_permission(_id, email, 'user', 'writer', email_message="Lai ah lai")
+    except gspread.exceptions.RequestError:
+        refresh(credentials)
+        share_spreadsheet(vendor, email)
     return None
 
 
@@ -385,10 +386,13 @@ contains the item number, the item name and pricing in that particular order."""
 
     return menu
 
-
 def show_all_spreadsheets():
     """shows all the spreadsheets currently registered with this account"""
-    allfiles = gc.openall()
+    try:
+        allfiles = gc.openall()
+    except gspread.exceptions.RequestError:
+        refresh(credentials)
+        show_all_spreadsheets()
     return allfiles
 
 
