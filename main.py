@@ -16,7 +16,7 @@ import sys
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler,\
-     ConversationHandler, MessageHandler, RegexHandler, Filters
+     ConversationHandler, MessageHandler, RegexHandler, Filters, JobQueue
 
 import spreadsheet
 
@@ -698,14 +698,26 @@ def cancel(bot, update):
     return ConversationHandler.END
 
 
+#job queue
+def refresh_token(bot, job):
+    LOGGER.info("Refreshing token...")
+    spreadsheet.gc = spreadsheet.refresh(spreadsheet.credentials)
+    
+
 def error(bot, update, error):
     LOGGER.warning('Update "%s" caused error "%s"' % (update, error))
 
 
 def main():
     # Create the EventHandler and pass it your bot's token.
-    #CHANGE TOKEN HERE
-    updater = Updater("462090913:AAG6WxcdYGxm7gfyGtT6pYMn8IUCxL-iv0o")
+    # CHANGE TOKEN HERE
+    updater = Updater("270596436:AAHz7XhcE-P2SOSgk3M2axCQ6vVAUJHsnc4")
+
+    # Access the job queue of the bot
+    j = updater.job_queue
+
+    # refreshes the token every 5 minutes
+    j.run_repeating(refresh_token, 300)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
